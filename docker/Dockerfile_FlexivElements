@@ -1,5 +1,5 @@
 # Build:
-#   docker build -f Dockerfile.FlexivElements -t flexiv-elements:<tag> .
+#   docker build -f docker/Dockerfile_FlexivElements -t flexiv-elements:<tag> .
 #
 # Run against host X11:
 #   docker run --device /dev/fuse --cap-add SYS_ADMIN --security-opt apparmor:unconfined \
@@ -18,7 +18,7 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends \
     libx11-6 libx11-xcb1 libxcb1 libxcb-render0 libxcb-shape0 libxcb-xfixes0 \
     libxcursor1 libxext6 libxfixes3 libxi6 libxinerama1 libxkbcommon0 libxkbcommon-x11-0 \
     libxrandr2 libxrender1 libxcomposite1 libxdamage1 libxtst6 \
-    net-tools gocryptfs libnss3 libxdamage1 qtbase5-dev libxcb-xinerama0 net-tools network-manager iputils-ping \
+    gocryptfs qtbase5-dev libxcb-xinerama0 net-tools network-manager iputils-ping \
     freeglut3-dev libatomic1 libgomp1 fuse3 inotify-tools \
     && rm -rf /var/lib/apt/lists/*
 

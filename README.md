@@ -59,6 +59,8 @@ Launch the container by running the respective script. You can pass the tag as a
 
 The containers are configured to use the host network (`--network host`). This allows programs running inside the container (e.g. Flexiv Elements, the simulated robots, etc.) to communicate natively and with low-latency with programs on the host or other machines, such as **NVIDIA Isaac Sim**, **Flexiv RDK**, and **Flexiv TDK**.
 
+> **Security notice:** The run scripts start containers with elevated privileges (`--cap-add SYS_ADMIN`, `--device /dev/fuse`, `--security-opt apparmor:unconfined`) in addition to host networking. These settings are required for the application's filesystem and IPC features, but they reduce container isolation. Avoid running these containers on shared or untrusted machines, and ensure that only trusted Docker images are used.
+
 ## Advanced Management
 
 The execution scripts automatically handle:

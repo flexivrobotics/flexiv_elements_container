@@ -8,8 +8,8 @@ export LD_LIBRARY_PATH="$APP_DIR/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 export QT_QPA_PLATFORM_PLUGIN_PATH="$APP_DIR/plugins"
 export QTWEBENGINE_DISABLE_SANDBOX="${QTWEBENGINE_DISABLE_SANDBOX:-1}"
 
-if [ -z "${DISPLAY:-}" ]; then
-    echo "DISPLAY is not set. Start the container with the host X11 socket mounted and pass DISPLAY through." >&2
+if [ -z "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ]; then
+    echo "Neither DISPLAY nor WAYLAND_DISPLAY is set. Start the container with the host X11 or Wayland socket mounted and pass the display variable through." >&2
     exit 1
 fi
 

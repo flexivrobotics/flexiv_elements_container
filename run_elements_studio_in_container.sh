@@ -27,6 +27,12 @@ if [ -z "$TAG" ]; then
     fi
 fi
 
+# Fail fast if no display server is available
+if [ -z "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ]; then
+    echo "Error: Neither DISPLAY nor WAYLAND_DISPLAY is set. A display server is required to run GUI applications." >&2
+    exit 1
+fi
+
 # Setup X11 authentication
 # This ensures that GUI applications running inside the container can authenticate
 # and display on the host's X server.
@@ -49,7 +55,7 @@ fi
 # Setup GPU access (if available) for Qt/OpenGL stability
 # Passing direct graphics rendering devices facilitates hardware-accelerated rendering.
 GPU_DEVICES=""
-if [ -c /dev/dri ]; then
+if [ -d /dev/dri ]; then
     GPU_DEVICES="--device /dev/dri"
 fi
 
