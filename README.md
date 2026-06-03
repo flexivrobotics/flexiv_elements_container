@@ -4,6 +4,10 @@ Tools to create Docker images for Flexiv Elements and Flexiv Elements Studio so 
 
 ---
 
+## Supported Host
+
+Currently, only **Ubuntu 22.04** is tested as the host operating system.
+
 ## Quick Start Guide
 
 ### 1. Prerequisites
@@ -52,6 +56,12 @@ Launch the container by running the respective script. You can pass the tag as a
   ```bash
   ./run_elements_studio_in_container.sh <tag>
   ```
+
+---
+
+## Host Network Mode
+
+The containers are configured to use the host network (`--network host`). This allows programs running inside the container (e.g. Flexiv Elements, the simulated robots, etc.) to communicate natively and with low-latency with programs on the host or other machines, such as **NVIDIA Isaac Sim**, **Flexiv RDK**, and **Flexiv TDK**.
 
 ---
 
