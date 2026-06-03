@@ -76,16 +76,23 @@ sync_simulators() {
         fi
     done
 
-    # Continuously watch for simulator creations / additions and copy current UI_COMM_CONF
-    while true; do
-        find "$APP_DIR/user_data_ui/simDir" -type d -name "settings" 2>/dev/null | while IFS= read -r settings_dir; do
-            # If the target file is missing, or is different compared to our UI config, copy it over
-            if [ -f "$MAIN_COMM_CONF" ] && { [ ! -f "$settings_dir/commCfg.prototxt" ] || ! cmp -s "$MAIN_COMM_CONF" "$settings_dir/commCfg.prototxt"; }; then
-                cp -f "$MAIN_COMM_CONF" "$settings_dir/commCfg.prototxt"
-                echo "Synced config to simulator: $settings_dir/commCfg.prototxt"
-            fi
-        done
-        sleep 1
+    # Use event-driven watcher to trigger sync on simulator directory creation immediately
+    echo "Starting event-driven inotify watch on simulator directory..."
+    inotifywait -m -e create,moved_to --format '%f' "$APP_DIR/user_data_ui/simDir" 2>/dev/null | while IFS= read -r name; do
+        if [ -f "$MAIN_COMM_CONF" ]; then
+            case "$name" in
+                simulator*)
+                    (
+                        # Wait briefly for directory structure to be created
+                        sleep 0.2
+                        settings_dir="$APP_DIR/user_data_ui/simDir/$name/settings"
+                        mkdir -p "$settings_dir"
+                        cp -f "$MAIN_COMM_CONF" "$settings_dir/commCfg.prototxt"
+                        echo "Inotify: Synced config to new simulator directory: $settings_dir/commCfg.prototxt"
+                    ) &
+                    ;;
+            esac
+        fi
     done
 }
 
