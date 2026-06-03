@@ -93,7 +93,7 @@ if [ -n "${CONTAINER_NAME}" ]; then
 else
     # Create a brand-new container with a random name assigned by docker
     echo "Creating and running new container..."
-    CONTAINER_ID=$(docker create --device /dev/fuse --cap-add SYS_ADMIN --ipc=host \
+    CONTAINER_ID=$(docker create --device /dev/fuse --cap-add SYS_ADMIN --ipc=host --network host \
                -e DISPLAY=$DISPLAY \
                $XAUTH_MOUNT \
                $WAYLAND_MOUNT \
