@@ -30,12 +30,20 @@ if [ -c /dev/dri ]; then
     GPU_DEVICES="--device /dev/dri"
 fi
 
-docker run --rm --device /dev/fuse --cap-add SYS_ADMIN --ipc=host \
-           -e DISPLAY=$DISPLAY \
-           $XAUTH_MOUNT \
-           $WAYLAND_MOUNT \
-           $GPU_DEVICES \
-           --security-opt apparmor:unconfined \
-           -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
-           --name "flexiv-elements-studio-${TAG}-$(date +%s)" \
-           flexiv-elements-studio:${TAG}
+# Create new container if it doesn't exist, otherwise start and attach to existing one
+CONTAINER_NAME="flexiv-elements-studio-${TAG}"
+if docker inspect "${CONTAINER_NAME}" >/dev/null 2>&1; then
+    echo "Container ${CONTAINER_NAME} already exists. Starting and attaching to it..."
+    docker start -ai "${CONTAINER_NAME}"
+else
+    echo "Creating and running new container ${CONTAINER_NAME}..."
+    docker run --device /dev/fuse --cap-add SYS_ADMIN --ipc=host \
+               -e DISPLAY=$DISPLAY \
+               $XAUTH_MOUNT \
+               $WAYLAND_MOUNT \
+               $GPU_DEVICES \
+               --security-opt apparmor:unconfined \
+               -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+               --name "${CONTAINER_NAME}" \
+               flexiv-elements-studio:${TAG}
+fi
