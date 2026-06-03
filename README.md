@@ -8,6 +8,8 @@ Tools to create Docker images for Flexiv Elements and Flexiv Elements Studio so 
 
 Currently, only **Ubuntu 22.04** is tested as the host operating system.
 
+---
+
 ## Quick Start Guide
 
 ### 1. Prerequisites
