@@ -17,11 +17,14 @@
 #   7. Post-execution watch to ensure the container is safely stopped.
 # ==============================================================================
 
-# Prompt interactively for the tag
-read -p "Please enter the tag for the [flexiv-elements-studio] Docker image to use: " TAG
+# Check if image tag is provided as an argument, otherwise prompt interactively
+TAG="$1"
 if [ -z "$TAG" ]; then
-    echo "Error: Tag cannot be empty."
-    exit 1
+    read -p "Please enter the tag for the [flexiv-elements-studio] Docker image to use: " TAG
+    if [ -z "$TAG" ]; then
+        echo "Error: Tag cannot be empty."
+        exit 1
+    fi
 fi
 
 # Setup X11 authentication
@@ -108,11 +111,9 @@ fi
 
 # Double check if the container is stopped after exiting, force stop if it is still running
 # This acts as a fallback to prevent dangling container processes.
-if [ -n "${CONTAINER_NAME}" ]; then
-    if docker inspect "${CONTAINER_NAME}" >/dev/null 2>&1; then
-        if [ "$(docker inspect -f '{{.State.Running}}' "${CONTAINER_NAME}")" = "true" ]; then
-            echo "Warning: Container ${CONTAINER_NAME} is still running after exiting. Forcing stop..."
-            docker stop "${CONTAINER_NAME}"
-        fi
+if docker inspect "${CONTAINER_NAME}" >/dev/null 2>&1; then
+    if [ "$(docker inspect -f '{{.State.Running}}' "${CONTAINER_NAME}")" = "true" ]; then
+        echo "Warning: Container ${CONTAINER_NAME} is still running after exiting. Forcing stop..."
+        docker stop "${CONTAINER_NAME}"
     fi
 fi
