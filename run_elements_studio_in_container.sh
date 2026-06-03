@@ -47,3 +47,11 @@ else
                --name "${CONTAINER_NAME}" \
                flexiv-elements-studio:${TAG}
 fi
+
+# Double check if the container is stopped after exiting, force stop if it is still running
+if docker inspect "${CONTAINER_NAME}" >/dev/null 2>&1; then
+    if [ "$(docker inspect -f '{{.State.Running}}' "${CONTAINER_NAME}")" = "true" ]; then
+        echo "Warning: Container ${CONTAINER_NAME} is still running after exiting. Forcing stop..."
+        docker stop "${CONTAINER_NAME}"
+    fi
+fi
