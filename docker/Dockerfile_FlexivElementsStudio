@@ -24,11 +24,11 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends \
 
 WORKDIR /workdir
 
-COPY ./FlexivElementsStudio/ /workdir/
-COPY ./entrypoint_flexiv_elements_studio.sh /usr/local/bin/entrypoint_flexiv_elements_studio
+COPY ./package/FlexivElementsStudio/ /workdir/
+COPY ./docker/entrypoint_flexiv_elements_studio.sh /usr/local/bin/entrypoint.sh
 
-RUN chmod 755 /usr/local/bin/entrypoint_flexiv_elements_studio
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 ENV QTWEBENGINE_DISABLE_SANDBOX=1
 
-ENTRYPOINT ["/usr/local/bin/entrypoint_flexiv_elements_studio"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
