@@ -36,8 +36,20 @@ fi
 # Setup X11 authentication
 # This ensures that GUI applications running inside the container can authenticate
 # and display on the host's X server.
+#
+# We write a merged xauth file to a STABLE path rather than mounting the host's
+# $XAUTHORITY directly. Under GNOME/Wayland, $XAUTHORITY points at an ephemeral
+# file (e.g. /run/user/1000/.mutter-Xwaylandauth.XXXXXX) whose name changes every
+# login session. Mounting that path bakes it into the container at creation time,
+# so restarting the container in a later session fails because the source is gone.
+# A fixed path lets restarts survive across login sessions.
 XAUTH_MOUNT=""
-if [ -n "$XAUTHORITY" ]; then
+XAUTH=/tmp/.flexiv-elements.xauth
+if [ -n "${DISPLAY:-}" ] && command -v xauth >/dev/null 2>&1; then
+    touch "$XAUTH"
+    xauth nlist "$DISPLAY" 2>/dev/null | sed -e 's/^..../ffff/' | xauth -f "$XAUTH" nmerge - 2>/dev/null
+    XAUTH_MOUNT="-v $XAUTH:$XAUTH:ro -e XAUTHORITY=$XAUTH"
+elif [ -n "$XAUTHORITY" ]; then
     XAUTH_MOUNT="-v $XAUTHORITY:$XAUTHORITY:ro -e XAUTHORITY=$XAUTHORITY"
 elif [ -f "$HOME/.Xauthority" ]; then
     XAUTH_MOUNT="-v $HOME/.Xauthority:/root/.Xauthority:ro -e XAUTHORITY=/root/.Xauthority"
