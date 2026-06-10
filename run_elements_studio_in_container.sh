@@ -37,18 +37,28 @@ fi
 # This ensures that GUI applications running inside the container can authenticate
 # and display on the host's X server.
 #
-# We write a merged xauth file to a STABLE path rather than mounting the host's
-# $XAUTHORITY directly. Under GNOME/Wayland, $XAUTHORITY points at an ephemeral
-# file (e.g. /run/user/1000/.mutter-Xwaylandauth.XXXXXX) whose name changes every
-# login session. Mounting that path bakes it into the container at creation time,
-# so restarting the container in a later session fails because the source is gone.
-# A fixed path lets restarts survive across login sessions.
+# We write a merged xauth file to a STABLE per-user path rather than mounting the
+# host's $XAUTHORITY directly. Under GNOME/Wayland, $XAUTHORITY points at an
+# ephemeral file (e.g. /run/user/1000/.mutter-Xwaylandauth.XXXXXX) whose name
+# changes every login session. Mounting that path bakes it into the container at
+# creation time, so restarting the container in a later session fails because the
+# source is gone. A fixed path lets restarts survive across login sessions.
+# We merge into a temp file first and only promote it to the stable path if the
+# merge succeeds and produces a non-empty result, preventing a stale container
+# from losing its valid cookie on re-run.
 XAUTH_MOUNT=""
-XAUTH=/tmp/.flexiv-elements.xauth
+XAUTH=/tmp/.flexiv-elements-$(id -u).xauth
 if [ -n "${DISPLAY:-}" ] && command -v xauth >/dev/null 2>&1; then
-    touch "$XAUTH"
-    xauth nlist "$DISPLAY" 2>/dev/null | sed -e 's/^..../ffff/' | xauth -f "$XAUTH" nmerge - 2>/dev/null
-    XAUTH_MOUNT="-v $XAUTH:$XAUTH:ro -e XAUTHORITY=$XAUTH"
+    XAUTH_TMP=$(mktemp /tmp/.flexiv-elements-XXXXXX.xauth)
+    chmod 600 "$XAUTH_TMP"
+    if xauth nlist "$DISPLAY" 2>/dev/null | sed -e 's/^..../ffff/' | xauth -f "$XAUTH_TMP" nmerge - 2>/dev/null \
+       && [ -s "$XAUTH_TMP" ]; then
+        mv -f "$XAUTH_TMP" "$XAUTH"
+        chmod 600 "$XAUTH"
+        XAUTH_MOUNT="-v $XAUTH:$XAUTH:ro -e XAUTHORITY=$XAUTH"
+    else
+        rm -f "$XAUTH_TMP"
+    fi
 elif [ -n "$XAUTHORITY" ]; then
     XAUTH_MOUNT="-v $XAUTHORITY:$XAUTHORITY:ro -e XAUTHORITY=$XAUTHORITY"
 elif [ -f "$HOME/.Xauthority" ]; then
